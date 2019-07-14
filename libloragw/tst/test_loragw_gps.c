@@ -193,7 +193,7 @@ int main()
     /* loop until user action */
     size_t wr_bytes = 0;
     while ((quit_sig != 1) && (exit_sig != 1)) {
-        while(wr_bytes < 1000)
+        while(wr_bytes < 300)
         {
             ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 1);
             if(count_read > 0)
@@ -208,7 +208,7 @@ int main()
             if(serial_buff[i] == 0xB5 && serial_buff[i + 1] == 0x62)
             {
                 unsigned short pl_length = serial_buff[i + 4] << 8 + serial_buff[i + 5];
-                latest_msg = lgw_parse_ubx(serial_buff + i, 500, &frame_size);
+                latest_msg = lgw_parse_ubx(serial_buff + i, 150, &frame_size);
                     if (latest_msg == INCOMPLETE) {
                         /* UBX header found but frame appears to be missing bytes */
                         frame_size = 0;
@@ -220,7 +220,7 @@ int main()
                         printf("\n~~ UBX NAV-TIMEGPS sentence, triggering synchronization attempt ~~\n");
                         gps_process_sync();
                     }
-                memcpy(serial_buff, serial_buff + i + frame_size, 1270 - (i + frame_size));
+                memcpy(serial_buff, serial_buff + i + frame_size, 400 - (i + frame_size));
                 wr_bytes -= i + frame_size;
                 break;
             }
