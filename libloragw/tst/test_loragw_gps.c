@@ -200,8 +200,9 @@ int main()
 
         while(nb_char < 1000)
         {
-            if (nb_char > 0) {
-                nb_char += read(gps_tty_dev, serial_buff + wr_idx, 1000);
+            int a = read(gps_tty_dev, serial_buff + wr_idx, 1000);
+            if (a > 0) {
+                nb_char += a;
             }
             wr_idx += (size_t)nb_char;
             printf("wr_idx=%d\n", wr_idx);
