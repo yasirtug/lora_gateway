@@ -206,7 +206,7 @@ int main()
         while(i < wr_bytes)
         {
             printf("i:%d\n", i);
-            if(serial_buff[i] == 0xB5 && serial_buff[i + 1] == 0x62)
+            if(serial_buff[i] == 0xB5)
             {
                 printf("found\n");
                 unsigned short pl_length = serial_buff[i + 4] << 8 + serial_buff[i + 5];
