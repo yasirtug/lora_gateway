@@ -200,6 +200,7 @@ int main()
                 wr_bytes += count_read;
             printf("wr_bytes=%d\n", wr_bytes);
         }
+        printf("%s", serial_buff);
         
         size_t i = 0;
         size_t frame_size = 0;
