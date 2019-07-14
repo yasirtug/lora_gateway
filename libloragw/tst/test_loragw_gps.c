@@ -205,7 +205,7 @@ int main()
         size_t frame_size = 0;
         while(i < wr_bytes)
         {
-            if(serial_buff[i] == 0xB5)
+            if(serial_buff[i] == 0xB5 && serial_buff[i + 1] == 0x62)
             {
                 printf("found\n");
                 unsigned short pl_length = serial_buff[i + 5];
