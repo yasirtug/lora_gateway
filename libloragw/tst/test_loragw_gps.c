@@ -207,9 +207,11 @@ int main()
         {
             if(serial_buff[i] == 0xB5 && serial_buff[i + 1] == 0x62)
             {
+                printf("found\n");
                 unsigned short pl_length = serial_buff[i + 4] << 8 + serial_buff[i + 5];
                 latest_msg = lgw_parse_ubx(serial_buff + i, 150, &frame_size);
                     if (latest_msg == INCOMPLETE) {
+                        printf("incomplete\n");
                         /* UBX header found but frame appears to be missing bytes */
                         frame_size = 0;
                     } else if (latest_msg == INVALID) {
