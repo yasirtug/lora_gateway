@@ -198,7 +198,7 @@ int main()
         /* blocking non-canonical read on serial port */
         ssize_t nb_char = 0;
 
-        while(nbchar < 1000)
+        while(nb_char < 1000)
         {
             nb_char += read(gps_tty_dev, serial_buff + wr_idx, 1000);
             if (nb_char <= 0) {
