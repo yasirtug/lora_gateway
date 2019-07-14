@@ -208,7 +208,7 @@ int main()
             {
                 unsigned short pl_length = serial_buff[i + 4] << 8 + serial_buff[i + 5];
                 lgw_parse_ubx(serial_buff + i, 500, &frame_size);
-                memcpy(serial_buff, serial_buff + i + frame_size, 1270 - (serial_buff + i + frame_size));
+                memcpy(serial_buff, serial_buff + i + frame_size, 1270 - (i + frame_size));
                 wr_bytes -= i + frame_size;
                 break;
             }
