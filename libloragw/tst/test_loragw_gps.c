@@ -208,6 +208,17 @@ int main()
             {
                 unsigned short pl_length = serial_buff[i + 4] << 8 + serial_buff[i + 5];
                 latest_msg = lgw_parse_ubx(serial_buff + i, 500, &frame_size);
+                    if (latest_msg == INCOMPLETE) {
+                        /* UBX header found but frame appears to be missing bytes */
+                        frame_size = 0;
+                    } else if (latest_msg == INVALID) {
+                        /* message header received but message appears to be corrupted */
+                        printf("WARNING: [gps] could not get a valid message from GPS (no time)\n");
+                        frame_size = 0;
+                    } else if (latest_msg == UBX_NAV_TIMEGPS) {
+                        printf("\n~~ UBX NAV-TIMEGPS sentence, triggering synchronization attempt ~~\n");
+                        gps_process_sync();
+                    }
                 memcpy(serial_buff, serial_buff + i + frame_size, 1270 - (i + frame_size));
                 wr_bytes -= i + frame_size;
                 break;
