@@ -208,8 +208,8 @@ int main()
             if(serial_buff[i] == 0xB5)
             {
                 printf("found\n");
-                unsigned short pl_length = serial_buff[i + 4];
-                pl_length = (pl_length << 8) + serial_buff[i + 5];
+                unsigned short pl_length = serial_buff[i + 5];
+                pl_length = (pl_length << 8) + serial_buff[i + 4];
                 latest_msg = lgw_parse_ubx(serial_buff + i, 8 + pl_length, &frame_size);
                 printf("pl=%d\n", pl_length);
                 if (latest_msg == INCOMPLETE) {
