@@ -196,9 +196,11 @@ int main()
         size_t frame_end_idx = 0;
 
         /* blocking non-canonical read on serial port */
-        while(nb_char < 1000)
+        ssize_t nb_char = 0;
+
+        while(nbchar < 1000)
         {
-            ssize_t nb_char += read(gps_tty_dev, serial_buff + wr_idx, 1000);
+            nb_char += read(gps_tty_dev, serial_buff + wr_idx, 1000);
             if (nb_char <= 0) {
                 printf("WARNING: [gps] read() returned value %d\n", nb_char);
                 continue;
