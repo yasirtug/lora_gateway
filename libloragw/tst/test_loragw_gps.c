@@ -142,7 +142,7 @@ int main()
     struct lgw_conf_rxrf_s rfconf;
 
     /* serial variables */
-    char serial_buff[128]; /* buffer to receive GPS data */
+    char serial_buff[1280]; /* buffer to receive GPS data */
     size_t wr_idx = 0;     /* pointer to end of chars in buffer */
     int gps_tty_dev; /* file descriptor to the serial port of the GNSS module */
 
@@ -191,88 +191,92 @@ int main()
     memset(&ppm_ref, 0, sizeof ppm_ref);
 
     /* loop until user action */
+    size_t wr_bytes = 0;
     while ((quit_sig != 1) && (exit_sig != 1)) {
-        size_t rd_idx = 0;
-        size_t frame_end_idx = 0;
-
-        /* blocking non-canonical read on serial port */
-        ssize_t nb_char = read(gps_tty_dev, serial_buff + wr_idx, LGW_GPS_MIN_MSG_SIZE);
-        if (nb_char <= 0) {
-            printf("WARNING: [gps] read() returned value %d\n", nb_char);
-            continue;
+        while(wr_bytes < 1000)
+        {
+            ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 1);
+            if(count_read > 0)
+                wr_bytes += count_read;
         }
-        wr_idx += (size_t)nb_char;
-
-        /*******************************************
-         * Scan buffer for UBX/NMEA sync chars and *
-         * attempt to decode frame if one is found *
-         *******************************************/
-        while (rd_idx < wr_idx) {
-            size_t frame_size = 0;
-
-            /* Scan buffer for UBX sync char */
-            if (serial_buff[rd_idx] == LGW_GPS_UBX_SYNC_CHAR) {
-
-                /***********************
-                 * Found UBX sync char *
-                 ***********************/
-                latest_msg = lgw_parse_ubx(&serial_buff[rd_idx], (wr_idx - rd_idx), &frame_size);
-
-                if (frame_size > 0) {
-                    if (latest_msg == INCOMPLETE) {
-                        /* UBX header found but frame appears to be missing bytes */
-                        frame_size = 0;
-                    } else if (latest_msg == INVALID) {
-                        /* message header received but message appears to be corrupted */
-                        printf("WARNING: [gps] could not get a valid message from GPS (no time)\n");
-                        frame_size = 0;
-                    } else if (latest_msg == UBX_NAV_TIMEGPS) {
-                        printf("\n~~ UBX NAV-TIMEGPS sentence, triggering synchronization attempt ~~\n");
-                        gps_process_sync();
-                    }
-                }
-            } else if(serial_buff[rd_idx] == LGW_GPS_NMEA_SYNC_CHAR) {
-                /************************
-                 * Found NMEA sync char *
-                 ************************/
-                /* scan for NMEA end marker (LF = 0x0a) */
-                char* nmea_end_ptr = memchr(&serial_buff[rd_idx],(int)0x0a, (wr_idx - rd_idx));
-
-                if (nmea_end_ptr) {
-                    /* found end marker */
-                    frame_size = nmea_end_ptr - &serial_buff[rd_idx] + 1;
-                    latest_msg = lgw_parse_nmea(&serial_buff[rd_idx], frame_size);
-
-                    if(latest_msg == INVALID || latest_msg == UNKNOWN) {
-                        /* checksum failed */
-                        frame_size = 0;
-                    } else if (latest_msg == NMEA_RMC) { /* Get location from RMC frames */
-                        gps_process_coords();
-                    }
-                }
+        
+        size_t i = 0;
+        size_t frame_size = 0;
+        while(i < wr_bytes)
+        {
+            if(serial_buff[i] == 0xB5 && serial_buff[i + 1] == 0x62)
+            {
+                unsigned short pl_length = serial_buff[i + 4] << 8 + serial_buff[i + 5];
+                lgw_parse_ubx(serial_buff + i, 500, &frame_size);
+                memcpy(serial_buff, serial_buff + i + frame_size, 1270 - (serial_buff + i + frame_size));
+                wr_bytes -= i + frame_size;
+                break;
             }
-
-            if (frame_size > 0) {
-                /* At this point message is a checksum verified frame
-                   we're processed or ignored. Remove frame from buffer */
-                rd_idx += frame_size;
-                frame_end_idx = rd_idx;
-            } else {
-                rd_idx++;
-            }
-        } /* ...for(rd_idx = 0... */
-
-        if (frame_end_idx) {
-          /* Frames have been processed. Remove bytes to end of last processed frame */
-          memcpy(serial_buff,&serial_buff[frame_end_idx],wr_idx - frame_end_idx);
-          wr_idx -= frame_end_idx;
-        } /* ...for(rd_idx = 0... */
-
-        /* Prevent buffer overflow */
-        if ((sizeof(serial_buff) - wr_idx) < LGW_GPS_MIN_MSG_SIZE) {
-            memcpy(serial_buff,&serial_buff[LGW_GPS_MIN_MSG_SIZE],wr_idx - LGW_GPS_MIN_MSG_SIZE);
-            wr_idx -= LGW_GPS_MIN_MSG_SIZE;
+            i++;
         }
+
+        // size_t rd_idx = 0;
+        // size_t frame_end_idx = 0;
+        
+        // /* blocking non-canonical read on serial port */
+        // ssize_t nb_char = read(gps_tty_dev, serial_buff + wr_idx, LGW_GPS_MIN_MSG_SIZE);
+        // if (nb_char <= 0) {
+        //     printf("WARNING: [gps] read() returned value %d\n", nb_char);
+        //     continue;
+        // }
+        // wr_idx += (size_t)nb_char;
+
+        // /*******************************************
+        //  * Scan buffer for UBX/NMEA sync chars and *
+        //  * attempt to decode frame if one is found *
+        //  *******************************************/
+        // while (rd_idx < wr_idx) {
+        //     size_t frame_size = 0;
+
+        //     /* Scan buffer for UBX sync char */
+        //     if (serial_buff[rd_idx] == LGW_GPS_UBX_SYNC_CHAR) {
+
+        //         /***********************
+        //          * Found UBX sync char *
+        //          ***********************/
+        //         latest_msg = lgw_parse_ubx(&serial_buff[rd_idx], (wr_idx - rd_idx), &frame_size);
+
+        //         if (frame_size > 0) {
+        //             if (latest_msg == INCOMPLETE) {
+        //                 /* UBX header found but frame appears to be missing bytes */
+        //                 frame_size = 0;
+        //             } else if (latest_msg == INVALID) {
+        //                 /* message header received but message appears to be corrupted */
+        //                 printf("WARNING: [gps] could not get a valid message from GPS (no time)\n");
+        //                 frame_size = 0;
+        //             } else if (latest_msg == UBX_NAV_TIMEGPS) {
+        //                 printf("\n~~ UBX NAV-TIMEGPS sentence, triggering synchronization attempt ~~\n");
+        //                 gps_process_sync();
+        //             }
+        //         }
+        //     }
+
+        //     if (frame_size > 0) {
+        //         /* At this point message is a checksum verified frame
+        //            we're processed or ignored. Remove frame from buffer */
+        //         rd_idx += frame_size;
+        //         frame_end_idx = rd_idx;
+        //     } else {
+        //         rd_idx++;
+        //     }
+        // } /* ...for(rd_idx = 0... */
+
+        // if (frame_end_idx) {
+        //   /* Frames have been processed. Remove bytes to end of last processed frame */
+        //   memcpy(serial_buff,&serial_buff[frame_end_idx],wr_idx - frame_end_idx);
+        //   wr_idx -= frame_end_idx;
+        // } /* ...for(rd_idx = 0... */
+
+        // /* Prevent buffer overflow */
+        // if ((sizeof(serial_buff) - wr_idx) < LGW_GPS_MIN_MSG_SIZE) {
+        //     memcpy(serial_buff,&serial_buff[LGW_GPS_MIN_MSG_SIZE],wr_idx - LGW_GPS_MIN_MSG_SIZE);
+        //     wr_idx -= LGW_GPS_MIN_MSG_SIZE;
+        // }
     }
 
     /* clean up before leaving */
