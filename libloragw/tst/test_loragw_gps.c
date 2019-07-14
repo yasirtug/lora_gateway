@@ -202,7 +202,7 @@ int main()
             continue;
         }
         wr_idx += (size_t)nb_char;
-
+        printf("wr_idx=%d\n", wr_idx);
         /*******************************************
          * Scan buffer for UBX/NMEA sync chars and *
          * attempt to decode frame if one is found *
