@@ -193,7 +193,7 @@ int main()
     /* loop until user action */
     size_t wr_bytes = 0;
     while ((quit_sig != 1) && (exit_sig != 1)) {
-        while(wr_bytes < 300)
+        while(wr_bytes < 300)   
         {
             ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 300);
             if(count_read > 0)
@@ -207,7 +207,7 @@ int main()
         {
             if ((serial_buff[0] == (char)0xB5) && (serial_buff[1] == (char)0x62))
             {
-                printf("found%d\n", serial_buffer[i + 1]);
+                printf("found%d\n", serial_buff[i + 1]);
                 unsigned short pl_length = serial_buff[i + 5];
                 pl_length = (pl_length << 8) + serial_buff[i + 4];
                 latest_msg = lgw_parse_ubx(serial_buff + i, 9 + pl_length, &frame_size);
