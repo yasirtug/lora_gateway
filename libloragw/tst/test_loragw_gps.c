@@ -205,12 +205,12 @@ int main()
         size_t frame_size = 0;
         while(i < wr_bytes)
         {
-            if(serial_buff[i] == 0x62 && serial_buff[i + 1] == 0xB5)
+            if ((serial_buff[0] == (char)0xB5) && (serial_buff[1] == (char)0x62))
             {
-                printf("found\n");
+                printf("found%d\n", serial_buffer[i + 1]);
                 unsigned short pl_length = serial_buff[i + 5];
                 pl_length = (pl_length << 8) + serial_buff[i + 4];
-                latest_msg = lgw_parse_ubx(serial_buff + i, 8 + pl_length, &frame_size);
+                latest_msg = lgw_parse_ubx(serial_buff + i, 9 + pl_length, &frame_size);
                 printf("pl=%d\n", pl_length);
                 if (latest_msg == INCOMPLETE) {
                     printf("incomplete\n");
