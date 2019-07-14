@@ -207,16 +207,18 @@ int main()
         {
             if ((serial_buff[i] == (char)0xB5) && (serial_buff[i + 1] == (char)0x62))
             {
-                printf("found%d\n", serial_buff[i + 1]);
+                printf("found\n");
                 unsigned short pl_length = serial_buff[i + 5];
                 pl_length = (pl_length << 8) + serial_buff[i + 4];
-                latest_msg = lgw_parse_ubx(serial_buff + i, 9 + pl_length, &frame_size);
+                latest_msg = lgw_parse_ubx(serial_buff + i, 400 - i, &frame_size);
                 printf("pl=%d\n", pl_length);
                 if (latest_msg == INCOMPLETE) {
                     printf("incomplete\n");
+                    break;
                     /* UBX header found but frame appears to be missing bytes */
                     frame_size = 0;
                 } else if (latest_msg == INVALID) {
+                    break;
                     /* message header received but message appears to be corrupted */
                     printf("WARNING: [gps] could not get a valid message from GPS (no time)\n");
                     frame_size = 0;
