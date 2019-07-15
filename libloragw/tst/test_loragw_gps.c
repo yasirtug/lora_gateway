@@ -193,46 +193,52 @@ int main()
     /* loop until user action */
     size_t wr_bytes = 0;
     while ((quit_sig != 1) && (exit_sig != 1)) {
-        while(wr_bytes < 300)   
-        {
-            ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 300);
-            if(count_read > 0)
-                wr_bytes += count_read;
-            printf("wr_bytes=%d\n", wr_bytes);
-        }
-        printf("%s", serial_buff);
-        
-        size_t i = 0;
-        size_t frame_size = 0;
+        // while(wr_bytes < 100)   
+        // {
+        ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 100);
+        if(count_read > 0)
+            wr_bytes += count_read;
+        printf("wr_bytes=%d\n", wr_bytes);
+        // }
+        int i = 0;
         while(i < wr_bytes)
         {
-            if ((serial_buff[i] == (char)0xB5) && (serial_buff[i + 1] == (char)0x62))
-            {
-                printf("found\n");
-                unsigned short pl_length = serial_buff[i + 5];
-                pl_length = (pl_length << 8) + serial_buff[i + 4];
-                latest_msg = lgw_parse_ubx(serial_buff + i, 400 - i, &frame_size);
-                printf("pl=%d\n", pl_length);
-                if (latest_msg == INCOMPLETE) {
-                    printf("incomplete\n");
-                    break;
-                    /* UBX header found but frame appears to be missing bytes */
-                    frame_size = 0;
-                } else if (latest_msg == INVALID) {
-                    break;
-                    /* message header received but message appears to be corrupted */
-                    printf("WARNING: [gps] could not get a valid message from GPS (no time)\n");
-                    frame_size = 0;
-                } else if (latest_msg == UBX_NAV_TIMEGPS) {
-                    printf("\n~~ UBX NAV-TIMEGPS sentence, triggering synchronization attempt ~~\n");
-                    gps_process_sync();
-                }
-                memcpy(serial_buff, serial_buff + i + frame_size, 400 - (i + frame_size));
-                wr_bytes -= i + frame_size;
-                break;
-            }
-            i++;
+            printf("%c", serial_buff[i]);
         }
+        memset(serial_buff, 0, wr_bytes);
+        
+        
+        // size_t i = 0;
+        // size_t frame_size = 0;
+        // while(i < wr_bytes)
+        // {
+        //     if ((serial_buff[i] == (char)0xB5) && (serial_buff[i + 1] == (char)0x62))
+        //     {
+        //         printf("found\n");
+        //         unsigned short pl_length = serial_buff[i + 5];
+        //         pl_length = (pl_length << 8) + serial_buff[i + 4];
+        //         latest_msg = lgw_parse_ubx(serial_buff + i, 400 - i, &frame_size);
+        //         printf("pl=%d\n", pl_length);
+        //         if (latest_msg == INCOMPLETE) {
+        //             printf("incomplete\n");
+        //             break;
+        //             /* UBX header found but frame appears to be missing bytes */
+        //             frame_size = 0;
+        //         } else if (latest_msg == INVALID) {
+        //             break;
+        //             /* message header received but message appears to be corrupted */
+        //             printf("WARNING: [gps] could not get a valid message from GPS (no time)\n");
+        //             frame_size = 0;
+        //         } else if (latest_msg == UBX_NAV_TIMEGPS) {
+        //             printf("\n~~ UBX NAV-TIMEGPS sentence, triggering synchronization attempt ~~\n");
+        //             gps_process_sync();
+        //         }
+        //         memcpy(serial_buff, serial_buff + i + frame_size, 400 - (i + frame_size));
+        //         wr_bytes -= i + frame_size;
+        //         break;
+        //     }
+        //     i++;
+        // }
 
         // size_t rd_idx = 0;
         // size_t frame_end_idx = 0;
