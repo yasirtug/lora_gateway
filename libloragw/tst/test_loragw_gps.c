@@ -198,7 +198,7 @@ int main()
         ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 100);
         if(count_read > 0)
             wr_bytes += count_read;
-        printf("wr_bytes=%d\n", wr_bytes);
+        //printf("wr_bytes=%d\n", wr_bytes);
         // }
         int i = 0;
         while(i < wr_bytes)
