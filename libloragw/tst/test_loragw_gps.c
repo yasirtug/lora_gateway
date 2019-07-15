@@ -203,7 +203,7 @@ int main()
         int i = 0;
         while(i < wr_bytes)
         {
-            printf("%c", serial_buff[i]);
+            printf("%c", serial_buff[i++]);
         }
         memset(serial_buff, 0, wr_bytes);
         
