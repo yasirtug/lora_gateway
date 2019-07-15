@@ -195,17 +195,17 @@ int main()
     while ((quit_sig != 1) && (exit_sig != 1)) {
         // while(wr_bytes < 100)   
         // {
-        ssize_t count_read = read(gps_tty_dev, serial_buff + wr_bytes, 1);
+        ssize_t count_read = read(gps_tty_dev, serial_buff, 1);
         if(count_read > 0)
-            wr_bytes += count_read;
+            printf("%c", serial_buff[0]);
         //printf("wr_bytes=%d\n", wr_bytes);
         // }
-        int i = 0;
-        while(i < wr_bytes)
-        {
-            printf("%c", serial_buff[i++]);
-        }
-        memset(serial_buff, 0, wr_bytes);
+        // int i = 0;
+        // while(i < wr_bytes)
+        // {
+        //     printf("%c", serial_buff[i++]);
+        // }
+        // memset(serial_buff, 0, wr_bytes);
         
         
         // size_t i = 0;
